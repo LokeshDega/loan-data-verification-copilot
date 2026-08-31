@@ -1,0 +1,7 @@
+loan_id,exception_type,field,severity,description
+LN-1005,MISSING_FIELD,loan_id,HIGH,Loan record is missing its unique identifier (loan_id).
+LN-1009,DUPLICATE_RECORD,loan_id,HIGH,Duplicate loan identifier found: LN-1009.
+LN-1020,INVALID_FORMAT,origination_date,MEDIUM,Date is not in YYYY-MM-DD format: 05/15/2022.
+LN-1025,INVALID_VALUE,maturity_date,HIGH,Maturity date 2019-01-01 is prior to origination date.
+LN-1035,INVALID_VALUE,current_balance,HIGH,Current balance exceeds original principal loan amount.
+LN-1070,CONFLICTING_DATA,current_balance,HIGH,Conflict found between source systems: OriginationSystem reports balance vs servicer portal.

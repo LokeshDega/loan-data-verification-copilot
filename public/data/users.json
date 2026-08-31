@@ -1,0 +1,20 @@
+[
+  {
+    "id": "usr-1",
+    "username": "alice_operator",
+    "role": "OPERATOR",
+    "name": "Alice Smith"
+  },
+  {
+    "id": "usr-2",
+    "username": "bob_reviewer",
+    "role": "REVIEWER",
+    "name": "Bob Jones"
+  },
+  {
+    "id": "usr-3",
+    "username": "charlie_consumer",
+    "role": "CONSUMER",
+    "name": "Charlie Brown"
+  }
+]

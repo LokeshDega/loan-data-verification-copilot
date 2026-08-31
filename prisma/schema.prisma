@@ -1,0 +1,104 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  username  String     @unique
+  role      String     // "OPERATOR" | "REVIEWER" | "CONSUMER"
+  createdAt DateTime   @default(now())
+  AuditLog  AuditLog[]
+}
+
+model Upload {
+  id          String       @id @default(uuid())
+  filename    String
+  uploadedAt  DateTime     @default(now())
+  rowCount    Int
+  status      String       // "PENDING" | "PROCESSED" | "FAILED"
+  sourceType  String       // "LOAN_TAPE" | "SERVICER_UPDATE" | "DOCUMENT_MANIFEST"
+  records     LoanRecord[]
+}
+
+model LoanRecord {
+  id                String             @id @default(uuid())
+  loanId            String             // Unique key from CSV
+  borrowerId        String
+  loanType          String
+  originationDate   String
+  maturityDate      String
+  originalPrincipal Float
+  currentBalance    Float
+  interestRate      Float
+  termMonths        Int
+  borrowerState     String
+  loanPurpose       String
+  creditGrade       String
+  employmentLength  String
+  incomeBand        String
+  paymentStatus     String
+  daysPastDue       Int
+  servicerName      String
+  lastPaymentDate   String
+  lastUpdatedAt     String
+  documentStatus    String
+  sourceSystem      String
+  
+  // Lineage & Metadata
+  status            String             // "PENDING" | "VERIFIED" | "REJECTED"
+  hash              String             // SHA-256 hash of canonical fields
+  uploadId          String
+  upload            Upload             @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  verifiedAt        DateTime?
+  verifiedBy        String?            // User who verified it
+  reviewerNotes     String?
+  
+  exceptions        Exception[]
+  auditLogs         AuditLog[]
+  aiRecommendations AIRecommendation[]
+
+  @@index([loanId])
+}
+
+model Exception {
+  id           String     @id @default(uuid())
+  loanRecordId String
+  loanRecord   LoanRecord @relation(fields: [loanRecordId], references: [id], onDelete: Cascade)
+  type         String     // e.g. "MISSING_FIELD", "INVALID_FORMAT", "VALUE_CONFLICT", "STALE_RECORD"
+  field        String     // Field causing exception
+  message      String     // Description of the error
+  severity     String     // "LOW" | "MEDIUM" | "HIGH"
+  resolved     Boolean    @default(false)
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  
+  createdAt    DateTime   @default(now())
+}
+
+model AuditLog {
+  id           String      @id @default(uuid())
+  loanRecordId String?
+  loanRecord   LoanRecord? @relation(fields: [loanRecordId], references: [id], onDelete: SetNull)
+  action       String      // "UPLOAD", "VALIDATE", "FIELD_EDIT", "COMMENT", "AI_SUGGESTION", "APPROVE", "REJECT", "EXPORT"
+  details      String      // JSON details of the action/change
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  timestamp    DateTime    @default(now())
+}
+
+model AIRecommendation {
+  id           String     @id @default(uuid())
+  loanRecordId String
+  loanRecord   LoanRecord @relation(fields: [loanRecordId], references: [id], onDelete: Cascade)
+  suggestion   String     // JSON suggested updates
+  explanation  String     // Plain english reason
+  prompt       String     // Prompt sent to AI
+  model        String     // Model used (e.g. gemini-2.5-flash)
+  timestamp    DateTime   @default(now())
+  accepted     Boolean?   // true if reviewer accepted it, false if rejected
+}
