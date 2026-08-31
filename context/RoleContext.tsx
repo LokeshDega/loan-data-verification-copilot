@@ -13,8 +13,8 @@ interface User {
 }
 
 interface RoleContextType {
-  currentRole: UserRole;
-  currentUser: User;
+  currentRole: UserRole | null;
+  currentUser: User | null;
   setRole: (role: UserRole) => void;
   usersList: User[];
 }
@@ -28,8 +28,8 @@ const usersList: User[] = [
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
-  const [currentRole, setCurrentRole] = useState<UserRole>('OPERATOR');
-  const [currentUser, setCurrentUser] = useState<User>(usersList[0]);
+  const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -40,6 +40,9 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
         if (user) {
           setCurrentUser(user);
         }
+      } else {
+        setCurrentRole('OPERATOR');
+        setCurrentUser(usersList[0]);
       }
     }
   }, []);

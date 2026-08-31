@@ -23,11 +23,12 @@ import {
 import { toast } from 'sonner';
 
 function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
-  const { currentRole } = useRole();
+  const { currentRole, currentUser } = useRole();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
+    if (!currentRole) return;
     const roleRoutes: Record<string, string[]> = {
       OPERATOR: ['/upload', '/history', '/synthetic'],
       REVIEWER: ['/exceptions', '/ai-panel', '/decisions'],
@@ -44,6 +45,7 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
       router.push(defaultPath);
     }
   }, [currentRole, pathname, router]);
+
   const {
     summaryData,
     loadingSummary,
@@ -77,6 +79,15 @@ function WorkspaceLayoutInner({ children }: { children: React.ReactNode }) {
     confirmMessage,
     confirmAction
   } = useWorkspace();
+
+  if (!currentRole || !currentUser) {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-black gap-3 text-white">
+        <IconRefresh className="h-8 w-8 text-primary animate-spin" />
+        <span className="text-xs text-muted-foreground font-semibold">Synchronizing simulated credentials...</span>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider
